@@ -12,46 +12,57 @@ const pusher = new Pusher({
   useTLS: true
 });
 
-// Menyimpan vote sementara di memori server
-let activeVotes = { red: {}, blue: {} };
+let matchState = {
+  timerRunning: false,
+  votes: { red: {}, blue: {} }
+};
 
 app.post('/api/vote', async (req, res) => {
   const { judgeId, team } = req.body;
   const now = Date.now();
 
-  // Catat vote juri
-  activeVotes[team][judgeId] = now;
+  if (!matchState.timerRunning) {
+    return res.json({ success: false, message: "Pertandingan belum dimulai!" });
+  }
 
-  // Hapus vote yang lebih dari 1 detik
-  for (let t in activeVotes) {
-    for (let j in activeVotes[t]) {
-      if (now - activeVotes[t][j] > 1000) {
-        delete activeVotes[t][j];
+  matchState.votes[team][judgeId] = now;
+
+  // Bersihkan vote lebih dari 1 detik
+  for (let t in matchState.votes) {
+    for (let j in matchState.votes[t]) {
+      if (now - matchState.votes[t][j] > 1000) {
+        delete matchState.votes[t][j];
       }
     }
   }
 
-  // Cek konsensus (minimal 2 juri menekan tombol yang sama dalam 1 detik)
-  let redCount = Object.keys(activeVotes.red).length;
-  let blueCount = Object.keys(activeVotes.blue).length;
+  let redCount = Object.keys(matchState.votes.red).length;
+  let blueCount = Object.keys(matchState.votes.blue).length;
 
   if (redCount >= 2) {
-    activeVotes.red = {};
+    matchState.votes.red = {};
     await pusher.trigger('taekwondo-channel', 'score-updated', { team: 'red', points: 1 });
     return res.json({ success: true, triggered: 'red' });
   }
 
   if (blueCount >= 2) {
-    activeVotes.blue = {};
+    matchState.votes.blue = {};
     await pusher.trigger('taekwondo-channel', 'score-updated', { team: 'blue', points: 1 });
     return res.json({ success: true, triggered: 'blue' });
   }
 
-  res.json({ success: true, message: "Vote dicatat" });
+  res.json({ success: true, message: "Vote tercatat, menunggu juri lain..." });
 });
 
 app.post('/api/control', async (req, res) => {
   const { action } = req.body;
+  if (action === 'start') {
+    matchState.timerRunning = true;
+  } else if (action === 'pause' || action === 'stop' || action === 'reset') {
+    matchState.timerRunning = false;
+    matchState.votes = { red: {}, blue: {} };
+  }
+
   await pusher.trigger('taekwondo-channel', 'control-action', { action });
   res.json({ success: true, action });
 });
