@@ -43,7 +43,7 @@
     .red-corner { background: linear-gradient(135deg, #a71d2a 0%, #dc3545 100%); border: 3px solid #ff4d4d; }
     .blue-corner { background: linear-gradient(135deg, #0d47a1 0%, #1976d2 100%); border: 3px solid #4da6ff; }
     .corner-name { font-size: 40px; font-weight: 900; letter-spacing: 3px; }
-    .score-display { font-size: 170px; font-weight: bold; line-height: 1; margin: 15px 0; }
+    .score-display { font-size: 180px; font-weight: bold; line-height: 1; margin: 15px 0; }
     
     .btn-minus {
       background-color: rgba(0, 0, 0, 0.4);
@@ -58,7 +58,7 @@
     .btn-minus:hover { background-color: rgba(0, 0, 0, 0.7); }
 
     .history-box {
-      flex: 0.9;
+      flex: 1.1;
       background: #161b22;
       border: 1px solid #30363d;
       border-radius: 20px;
@@ -68,7 +68,7 @@
       align-items: center;
     }
     .history-title { font-size: 15px; font-weight: bold; color: #ffc107; margin-bottom: 12px; letter-spacing: 1px; }
-    .history-table { width: 100%; font-size: 15px; text-align: center; border-collapse: collapse; }
+    .history-table { width: 100%; font-size: 14px; text-align: center; border-collapse: collapse; }
     .history-table th, .history-table td { padding: 8px; border-bottom: 1px solid #30363d; }
 
     .control-panel { margin-top: 15px; display: flex; flex-direction: column; gap: 10px; align-items: center; width: 100%; }
@@ -106,8 +106,6 @@
       width: 50px; text-align: center; background: #0b0e14; color: white; border: 1px solid #444; padding: 5px; border-radius: 4px;
     }
     .time-setter input:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    /* Styling khusus untuk cetak PDF agar rapi seperti laporan resmi */
     #pdf-template { display: none; }
   </style>
 </head>
@@ -119,16 +117,14 @@
   </div>
 
   <div class="main-container">
-    <!-- Sudut Merah -->
     <div class="corner red-corner">
       <div class="corner-name">MERAH</div>
       <div class="score-display" id="score-red">0</div>
       <button class="btn-minus" onclick="kurangiSkor('red')">-1 Point</button>
     </div>
 
-    <!-- Tabel Riwayat -->
     <div class="history-box">
-      <div class="history-title">RIWAYAT RONDE</div>
+      <div class="history-title">RIWAYAT RONDE & JURI</div>
       <table class="history-table">
         <thead>
           <tr>
@@ -147,7 +143,6 @@
       </table>
     </div>
 
-    <!-- Sudut Biru -->
     <div class="corner blue-corner">
       <div class="corner-name">BIRU</div>
       <div class="score-display" id="score-blue">0</div>
@@ -155,7 +150,6 @@
     </div>
   </div>
 
-  <!-- Panel Kontrol -->
   <div class="control-panel">
     <div class="btn-group">
       <button id="btn-start" class="ctrl-btn btn-start" onclick="mulaiTimer()">Start</button>
@@ -177,23 +171,33 @@
     </div>
   </div>
 
-  <!-- Template Tersembunyi khusus untuk Cetak PDF agar sesuai format contoh -->
-  <div id="pdf-template" style="background: white; color: black; padding: 30px; font-family: Arial, sans-serif; width: 800px; margin: 0 auto;">
+  <!-- Template PDF Tersembunyi -->
+  <div id="pdf-template" style="background: white; color: black; padding: 25px; font-family: Arial, sans-serif; width: 850px; margin: 0 auto;">
     <h2 style="text-align: center; margin-bottom: 5px; font-size: 20px;">HASIL PERTANDINGAN TAEKWONDO</h2>
     <div id="pdf-timestamp" style="text-align: center; font-size: 12px; color: #555; margin-bottom: 20px;"></div>
     
-    <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 14px;">
+    <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; margin-bottom: 20px;">
       <thead>
         <tr style="background-color: #2980b9; color: white;">
-          <th style="padding: 10px; border: 1px solid #ddd;">Ronde</th>
-          <th style="padding: 10px; border: 1px solid #ddd;">Skor Merah</th>
-          <th style="padding: 10px; border: 1px solid #ddd;">Skor Biru</th>
-          <th style="padding: 10px; border: 1px solid #ddd;">Pemenang Ronde</th>
+          <th style="padding: 8px; border: 1px solid #ddd;">Ronde</th>
+          <th style="padding: 8px; border: 1px solid #ddd;">Skor Merah</th>
+          <th style="padding: 8px; border: 1px solid #ddd;">Skor Biru</th>
+          <th style="padding: 8px; border: 1px solid #ddd;">Pemenang Ronde</th>
         </tr>
       </thead>
-      <tbody id="pdf-table-body">
-        <!-- Diisi otomatis oleh JavaScript -->
-      </tbody>
+      <tbody id="pdf-table-body"></tbody>
+    </table>
+
+    <h3 style="font-size: 14px; margin-bottom: 8px; color: #333;">DETAIL JURI PEMBERI SKOR:</h3>
+    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 12px;">
+      <thead>
+        <tr style="background-color: #444; color: white;">
+          <th style="padding: 6px; border: 1px solid #ddd;">Ronde</th>
+          <th style="padding: 6px; border: 1px solid #ddd;">Sudut</th>
+          <th style="padding: 6px; border: 1px solid #ddd;">Juri yang Menyetujui</th>
+        </tr>
+      </thead>
+      <tbody id="pdf-judge-body"></tbody>
     </table>
   </div>
 
@@ -203,7 +207,7 @@
 
     let scores = { red: 0, blue: 0 };
     let currentRound = 1;
-    let roundScores = { 1: { red: 0, blue: 0 } };
+    let roundScores = { 1: { red: 0, blue: 0, logs: [] } };
     let timeLeft = 120;
     let timerId = null;
 
@@ -213,6 +217,8 @@
 
       roundScores[currentRound].red = scores.red;
       roundScores[currentRound].blue = scores.blue;
+      roundScores[currentRound].logs.push({ team: data.team, judges: data.judges });
+
       updateTampilan();
     });
 
@@ -239,7 +245,6 @@
         `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     }
 
-    // Mengatur status tombol aktif/redup saat pertandingan berjalan
     function setControlsDisabled(disabled) {
       document.getElementById('btn-start').disabled = disabled;
       document.getElementById('btn-set').disabled = disabled;
@@ -267,7 +272,8 @@
           updateTimerDisplay();
         } else {
           pauseTimer();
-          alert('Waktu ronde habis!');
+          alert('Waktu ronde habis! Otomatis pindah ke ronde berikutnya.');
+          nextRonde();
         }
       }, 1000);
     }
@@ -310,7 +316,8 @@
       currentRound++;
       scores.red = 0;
       scores.blue = 0;
-      roundScores[currentRound] = { red: 0, blue: 0 };
+      roundScores[currentRound] = { red: 0, blue: 0, logs: [] };
+      updateTampilan();
 
       let tbody = document.getElementById('history-body');
       let tr = document.createElement('tr');
@@ -327,7 +334,7 @@
         await pauseTimer();
         scores = { red: 0, blue: 0 };
         currentRound = 1;
-        roundScores = { 1: { red: 0, blue: 0 } };
+        roundScores = { 1: { red: 0, blue: 0, logs: [] } };
         timeLeft = 120;
         document.getElementById('round-label').innerText = 'ROUND 1';
         document.getElementById('history-body').innerHTML = `<tr><td>1</td><td id="h-red-1">0</td><td id="h-blue-1">0</td></tr>`;
@@ -343,8 +350,8 @@
     }
 
     function downloadPDF() {
-      // Buat isi tabel template PDF secara dinamis
       let pdfBody = '';
+      let judgeBody = '';
       let totalRed = 0;
       let totalBlue = 0;
 
@@ -366,9 +373,27 @@
             <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">${winner}</td>
           </tr>
         `;
+
+        if (roundScores[r] && roundScores[r].logs.length > 0) {
+          roundScores[r].logs.forEach((log, idx) => {
+            let teamName = log.team === 'red' ? 'MERAH' : 'BIRU';
+            let colorStyle = log.team === 'red' ? 'color: #d9534f;' : 'color: #0275d8;';
+            let judgesStr = log.judges.map(j => `Juri ${j}`).join(', ');
+            judgeBody += `
+              <tr>
+                <td style="padding: 5px; border: 1px solid #ddd;">Ronde ${r} (Poin #${idx+1})</td>
+                <td style="padding: 5px; border: 1px solid #ddd; font-weight: bold; ${colorStyle}">${teamName}</td>
+                <td style="padding: 5px; border: 1px solid #ddd;">${judgesStr}</td>
+              </tr>
+            `;
+          });
+        }
       }
 
-      // Baris Total Skor
+      if (judgeBody === '') {
+        judgeBody = `<tr><td colspan="3" style="padding: 6px; border: 1px solid #ddd; text-align: center;">Tidak ada catatan poin masuk.</td></tr>`;
+      }
+
       let overallWinner = "SERI (IMBANG)";
       if (totalRed > totalBlue) overallWinner = "MERAH (PEMENANG)";
       else if (totalBlue > totalRed) overallWinner = "BIRU (PEMENANG)";
@@ -376,20 +401,19 @@
       pdfBody += `
         <tr style="background-color: #f2f2f2; font-weight: bold;">
           <td style="padding: 10px; border: 1px solid #ddd;">TOTAL SKOR</td>
-          <td style="padding: 10px; border: 1px solid #ddd; color: #d9534f; font-size: 16px;">${totalRed}</td>
-          <td style="padding: 10px; border: 1px solid #ddd; color: #0275d8; font-size: 16px;">${totalBlue}</td>
+          <td style="padding: 10px; border: 1px solid #ddd; color: #d9534f; font-size: 15px;">${totalRed}</td>
+          <td style="padding: 10px; border: 1px solid #ddd; color: #0275d8; font-size: 15px;">${totalBlue}</td>
           <td style="padding: 10px; border: 1px solid #ddd;">${overallWinner}</td>
         </tr>
       `;
 
       document.getElementById('pdf-table-body').innerHTML = pdfBody;
+      document.getElementById('pdf-judge-body').innerHTML = judgeBody;
 
-      // Format Waktu Cetak
       let now = new Date();
       let timeString = `${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()}, ${now.getHours().toString().padStart(2,'0')}.${now.getMinutes().toString().padStart(2,'0')}`;
       document.getElementById('pdf-timestamp').innerText = `Waktu Cetak: ${timeString}`;
 
-      // Cetak PDF menggunakan elemen template
       const element = document.getElementById('pdf-template');
       element.style.display = 'block';
 
@@ -402,7 +426,7 @@
       };
 
       html2pdf().from(element).set(opt).save().then(() => {
-        element.style.display = 'none'; // Sembunyikan kembali setelah selesai
+        element.style.display = 'none';
       });
     }
   </script>
