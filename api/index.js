@@ -4,7 +4,6 @@ const Pusher = require('pusher');
 const app = express();
 app.use(express.json());
 
-// Inisialisasi Pusher
 const pusher = new Pusher({
   appId: "2201670",
   key: "1c192663177ea6b128ac",
@@ -13,65 +12,46 @@ const pusher = new Pusher({
   useTLS: true
 });
 
-// Memori sementara untuk melacak status timer & vote dari 3 juri
-let matchState = {
-  timerRunning: false,
-  votes: { red: {}, blue: {} }
-};
+// Menyimpan vote sementara di memori server
+let activeVotes = { red: {}, blue: {} };
 
-// Endpoint menerima vote dari Juri
 app.post('/api/vote', async (req, res) => {
   const { judgeId, team } = req.body;
   const now = Date.now();
 
-  if (!matchState.timerRunning) {
-    return res.json({ success: false, message: "Pertandingan belum dimulai!" });
-  }
+  // Catat vote juri
+  activeVotes[team][judgeId] = now;
 
-  // Catat vote juri beserta timestamp
-  matchState.votes[team][judgeId] = now;
-
-  // Hapus vote yang usianya sudah lebih dari 1 detik (1000 ms)
-  const windowTime = 1000;
-  for (let t in matchState.votes) {
-    for (let j in matchState.votes[t]) {
-      if (now - matchState.votes[t][j] > windowTime) {
-        delete matchState.votes[t][j];
+  // Hapus vote yang lebih dari 1 detik
+  for (let t in activeVotes) {
+    for (let j in activeVotes[t]) {
+      if (now - activeVotes[t][j] > 1000) {
+        delete activeVotes[t][j];
       }
     }
   }
 
-  // Cek konsensus: Minimal 2 juri menekan warna sama dalam rentang 1 detik
-  let redCount = Object.keys(matchState.votes.red).length;
-  let blueCount = Object.keys(matchState.votes.blue).length;
+  // Cek konsensus (minimal 2 juri menekan tombol yang sama dalam 1 detik)
+  let redCount = Object.keys(activeVotes.red).length;
+  let blueCount = Object.keys(activeVotes.blue).length;
 
   if (redCount >= 2) {
-    matchState.votes.red = {}; // Reset setelah poin berhasil terpicu
+    activeVotes.red = {};
     await pusher.trigger('taekwondo-channel', 'score-updated', { team: 'red', points: 1 });
     return res.json({ success: true, triggered: 'red' });
   }
 
   if (blueCount >= 2) {
-    matchState.votes.blue = {}; // Reset setelah poin berhasil terpicu
+    activeVotes.blue = {};
     await pusher.trigger('taekwondo-channel', 'score-updated', { team: 'blue', points: 1 });
     return res.json({ success: true, triggered: 'blue' });
   }
 
-  res.json({ success: true, message: "Vote tercatat, menunggu juri lain..." });
+  res.json({ success: true, message: "Vote dicatat" });
 });
 
-// Endpoint untuk kontrol timer (Start/Pause/Stop/Reset) dari Display
 app.post('/api/control', async (req, res) => {
   const { action } = req.body;
-
-  if (action === 'start') {
-    matchState.timerRunning = true;
-  } else if (action === 'pause' || action === 'stop' || action === 'reset') {
-    matchState.timerRunning = false;
-    matchState.votes = { red: {}, blue: {} };
-  }
-
-  // Kirim sinyal kontrol ke seluruh client
   await pusher.trigger('taekwondo-channel', 'control-action', { action });
   res.json({ success: true, action });
 });
