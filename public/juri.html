@@ -53,55 +53,38 @@
     }
     .btn-vote {
       flex: 1;
-      border: 2px dashed #444;
       border-radius: 16px;
       font-size: 28px;
       font-weight: bold;
       display: flex;
       justify-content: center;
       align-items: center;
-      cursor: not-allowed;
-      transition: all 0.2s;
-      opacity: 0.25;
+      cursor: pointer;
+      transition: transform 0.1s;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
+      border: 2px solid transparent;
     }
     .btn-red {
-      background-color: #3d1418;
-      color: #888;
-      border-color: #555;
-    }
-    .btn-blue {
-      background-color: #122847;
-      color: #888;
-      border-color: #555;
-    }
-    /* Ketika Timer Berjalan (Aktif & Menyala) */
-    .active-vote {
-      opacity: 1 !important;
-      cursor: pointer !important;
-      border-style: solid !important;
-    }
-    .active-vote.btn-red {
       background-color: #dc3545;
       color: #ffffff;
       border-color: #ff4d4d;
-      box-shadow: 0 0 15px rgba(220, 53, 69, 0.4);
+      box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
     }
-    .active-vote.btn-blue {
+    .btn-blue {
       background-color: #0d6efd;
       color: #ffffff;
       border-color: #4da6ff;
-      box-shadow: 0 0 15px rgba(13, 110, 253, 0.4);
+      box-shadow: 0 4px 15px rgba(13, 110, 253, 0.4);
     }
-    .active-vote:active {
-      transform: scale(0.96);
+    .btn-vote:active {
+      transform: scale(0.95);
     }
   </style>
 </head>
 <body>
 
-  <div class="status-bar" id="status-text">MEMUAT STATUS...</div>
+  <div class="status-bar" id="status-text">SIAP MENILAI</div>
 
   <div class="judge-selector">
     Perangkat Ini: 
@@ -113,15 +96,13 @@
   </div>
 
   <div class="button-container">
-    <div id="btn-red" class="btn-vote btn-red" onclick="kirimVote('red')">+1 MERAH</div>
-    <div id="btn-blue" class="btn-vote btn-blue" onclick="kirimVote('blue')">+1 BIRU</div>
+    <div class="btn-vote btn-red" onclick="kirimVote('red')">+1 MERAH</div>
+    <div class="btn-vote btn-blue" onclick="kirimVote('blue')">+1 BIRU</div>
   </div>
 
   <script>
     const pusher = new Pusher('1c192663177ea6b128ac', { cluster: 'ap1' });
     const channel = pusher.subscribe('taekwondo-channel');
-
-    let timerIsRunning = false;
 
     function getJudgeId() {
       return document.getElementById('judge-id').value;
@@ -138,46 +119,30 @@
       }
     }
 
-    // Dengarkan perintah dari Display/Operator
+    // Opsional: Ikut mendengarkan status start/pause dari operator
     channel.bind('control-action', function(data) {
+      const statusBar = document.getElementById('status-text');
       if (data.action === 'start') {
-        timerIsRunning = true;
-        ubahStatusAktif(true);
-      } else if (data.action === 'pause' || data.action === 'stop' || data.action === 'reset') {
-        timerIsRunning = false;
-        ubahStatusAktif(false);
+        statusBar.innerText = "PERTANDINGAN BERJALAN";
+        statusBar.style.color = "#4dff4d";
+      } else if (data.action === 'pause' || data.action === 'stop') {
+        statusBar.innerText = "PERTANDINGAN DI-PAUSE / STOP";
+        statusBar.style.color = "#ffc107";
       }
     });
 
-    function ubahStatusAktif(aktif) {
-      const redBtn = document.getElementById('btn-red');
-      const blueBtn = document.getElementById('btn-blue');
-      const statusBar = document.getElementById('status-text');
-
-      if (aktif) {
-        redBtn.classList.add('active-vote');
-        blueBtn.classList.add('active-vote');
-        statusBar.innerText = "PERTANDINGAN BERJALAN (SILAHKAN MENILAI)";
-        statusBar.style.color = "#4dff4d";
-      } else {
-        redBtn.classList.remove('active-vote');
-        blueBtn.classList.remove('active-vote');
-        statusBar.innerText = "MENUNGGU START DARI OPERATOR...";
-        statusBar.style.color = "#ffc107";
-      }
-    }
-
     async function kirimVote(team) {
-      if (!timerIsRunning) return;
-
       try {
-        await fetch('/api/vote', {
+        const response = await fetch('/api/vote', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ judgeId: getJudgeId(), team })
         });
+        const result = await response.json();
+        console.log('Vote terkirim:', result);
       } catch (error) {
         console.error('Gagal mengirim vote:', error);
+        alert('Gagal terhubung ke server!');
       }
     }
   </script>
