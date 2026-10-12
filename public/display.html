@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Display Skor Taekwondo - Professional</title>
   <script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
-  <!-- Library untuk cetak PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -19,23 +18,9 @@
       min-height: 100vh;
       padding: 20px;
     }
-    .top-header {
-      text-align: center;
-      margin-bottom: 15px;
-    }
-    .round-title {
-      font-size: 24px;
-      font-weight: bold;
-      color: #ffc107;
-      letter-spacing: 2px;
-    }
-    .timer {
-      font-size: 70px;
-      font-weight: bold;
-      letter-spacing: 3px;
-      color: #ffffff;
-      margin-top: 5px;
-    }
+    .top-header { text-align: center; margin-bottom: 15px; }
+    .round-title { font-size: 28px; font-weight: bold; color: #ffc107; letter-spacing: 2px; }
+    .timer { font-size: 80px; font-weight: bold; letter-spacing: 3px; color: #ffffff; margin-top: 5px; }
     .main-container {
       display: flex;
       gap: 20px;
@@ -54,39 +39,21 @@
       padding: 30px 20px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
-    .red-corner {
-      background: linear-gradient(135deg, #a71d2a 0%, #dc3545 100%);
-      border: 2px solid #ff4d4d;
-    }
-    .blue-corner {
-      background: linear-gradient(135deg, #0d47a1 0%, #1976d2 100%);
-      border: 2px solid #4da6ff;
-    }
-    .corner-name {
-      font-size: 32px;
-      font-weight: 900;
-      letter-spacing: 2px;
-    }
-    .score-display {
-      font-size: 130px;
-      font-weight: bold;
-      line-height: 1;
-      margin: 20px 0;
-    }
+    .red-corner { background: linear-gradient(135deg, #a71d2a 0%, #dc3545 100%); border: 2px solid #ff4d4d; }
+    .blue-corner { background: linear-gradient(135deg, #0d47a1 0%, #1976d2 100%); border: 2px solid #4da6ff; }
+    .corner-name { font-size: 36px; font-weight: 900; letter-spacing: 2px; }
+    .score-display { font-size: 150px; font-weight: bold; line-height: 1; margin: 20px 0; }
     .btn-minus {
-      background-color: rgba(0, 0, 0, 0.3);
+      background-color: rgba(0, 0, 0, 0.4);
       color: white;
       border: 1px solid rgba(255, 255, 255, 0.5);
-      padding: 8px 16px;
+      padding: 10px 20px;
       border-radius: 6px;
-      font-size: 16px;
+      font-size: 18px;
       cursor: pointer;
       font-weight: bold;
-      transition: background 0.2s;
     }
-    .btn-minus:hover {
-      background-color: rgba(0, 0, 0, 0.6);
-    }
+    .btn-minus:hover { background-color: rgba(0, 0, 0, 0.7); }
     .history-box {
       width: 250px;
       background: #161b22;
@@ -97,37 +64,11 @@
       flex-direction: column;
       align-items: center;
     }
-    .history-title {
-      font-size: 14px;
-      font-weight: bold;
-      color: #ffc107;
-      margin-bottom: 10px;
-      letter-spacing: 1px;
-    }
-    .history-table {
-      width: 100%;
-      font-size: 14px;
-      text-align: center;
-      border-collapse: collapse;
-    }
-    .history-table th, .history-table td {
-      padding: 6px;
-      border-bottom: 1px solid #30363d;
-    }
-    .control-panel {
-      margin-top: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      align-items: center;
-      width: 100%;
-    }
-    .btn-group {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
+    .history-title { font-size: 14px; font-weight: bold; color: #ffc107; margin-bottom: 10px; letter-spacing: 1px; }
+    .history-table { width: 100%; font-size: 14px; text-align: center; border-collapse: collapse; }
+    .history-table th, .history-table td { padding: 6px; border-bottom: 1px solid #30363d; }
+    .control-panel { margin-top: 20px; display: flex; flex-direction: column; gap: 12px; align-items: center; width: 100%; }
+    .btn-group { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
     button.ctrl-btn {
       padding: 10px 20px;
       font-size: 16px;
@@ -136,19 +77,15 @@
       border-radius: 6px;
       cursor: pointer;
       color: white;
-      transition: opacity 0.2s, background-color 0.2s;
+      transition: opacity 0.2s;
     }
-    button.ctrl-btn:disabled {
-      opacity: 0.4 !important;
-      cursor: not-allowed !important;
-    }
+    button.ctrl-btn:disabled { opacity: 0.4 !important; cursor: not-allowed !important; }
     .btn-start { background-color: #28a745; }
     .btn-pause { background-color: #ffc107; color: black !important; }
     .btn-stop { background-color: #dc3545; }
     .btn-action { background-color: #17a2b8; }
     .btn-danger { background-color: #d9534f; }
     .btn-pdf { background-color: #6f42c1; }
-    
     .time-setter {
       display: flex;
       gap: 8px;
@@ -159,18 +96,9 @@
       border: 1px solid #30363d;
     }
     .time-setter input {
-      width: 50px;
-      text-align: center;
-      background: #0b0e14;
-      color: white;
-      border: 1px solid #444;
-      padding: 5px;
-      border-radius: 4px;
+      width: 50px; text-align: center; background: #0b0e14; color: white; border: 1px solid #444; padding: 5px; border-radius: 4px;
     }
-    .time-setter input:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+    .time-setter input:disabled { opacity: 0.5; cursor: not-allowed; }
   </style>
 </head>
 <body id="pdf-area">
@@ -181,14 +109,14 @@
   </div>
 
   <div class="main-container">
-    <!-- Sudut Merah -->
+    <!-- Merah -->
     <div class="corner red-corner">
       <div class="corner-name">MERAH</div>
       <div class="score-display" id="score-red">0</div>
       <button class="btn-minus" onclick="kurangiSkor('red')">-1 Point</button>
     </div>
 
-    <!-- Riwayat Ronde (Tengah) -->
+    <!-- Tabel Riwayat -->
     <div class="history-box">
       <div class="history-title">RIWAYAT RONDE</div>
       <table class="history-table">
@@ -209,7 +137,7 @@
       </table>
     </div>
 
-    <!-- Sudut Biru -->
+    <!-- Biru -->
     <div class="corner blue-corner">
       <div class="corner-name">BIRU</div>
       <div class="score-display" id="score-blue">0</div>
@@ -217,7 +145,7 @@
     </div>
   </div>
 
-  <!-- Panel Kontrol Operator -->
+  <!-- Panel Kontrol -->
   <div class="control-panel">
     <div class="btn-group">
       <button id="btn-start" class="ctrl-btn btn-start" onclick="mulaiTimer()">Start</button>
@@ -240,26 +168,25 @@
   </div>
 
   <script>
-    // Koneksi Pusher untuk menerima input dari Juri
     const pusher = new Pusher('1c192663177ea6b128ac', { cluster: 'ap1' });
     const channel = pusher.subscribe('taekwondo-channel');
 
     let scores = { red: 0, blue: 0 };
     let currentRound = 1;
     let roundScores = { 1: { red: 0, blue: 0 } };
+    let timeLeft = 120;
+    let timerId = null;
 
-    // Terima update skor dari juri
+    // Terima update skor sah (dari konsensus 2/3 juri)
     channel.bind('score-updated', function(data) {
       if (data.team === 'red') scores.red += Number(data.points);
       if (data.team === 'blue') scores.blue += Number(data.points);
 
       roundScores[currentRound].red = scores.red;
       roundScores[currentRound].blue = scores.blue;
-
       updateTampilan();
     });
 
-    // Tombol -1 Point oleh operator
     function kurangiSkor(team) {
       if (team === 'red' && scores.red > 0) scores.red -= 1;
       if (team === 'blue' && scores.blue > 0) scores.blue -= 1;
@@ -276,10 +203,6 @@
       document.getElementById(`h-blue-${currentRound}`).innerText = scores.blue;
     }
 
-    // Pengaturan Timer
-    let timeLeft = 120; // 2 Menit dalam detik
-    let timerId = null;
-
     function updateTimerDisplay() {
       let m = Math.floor(timeLeft / 60);
       let s = timeLeft % 60;
@@ -294,10 +217,15 @@
       document.getElementById('input-s').disabled = disabled;
     }
 
-    function mulaiTimer() {
+    async function mulaiTimer() {
       if (timerId !== null) return;
       
-      // Matikan tombol Start, Set, dan input waktu
+      await fetch('/api/control', { 
+        method: 'POST', 
+        headers: {'Content-Type': 'application/json'}, 
+        body: JSON.stringify({ action: 'start' }) 
+      });
+
       setControlsDisabled(true);
 
       timerId = setInterval(() => {
@@ -305,26 +233,36 @@
           timeLeft--;
           updateTimerDisplay();
         } else {
-          clearInterval(timerId);
-          timerId = null;
-          setControlsDisabled(false); // Aktifkan kembali tombol
+          pauseTimer();
           alert('Waktu ronde habis!');
         }
       }, 1000);
     }
 
-    function pauseTimer() {
-      clearInterval(timerId);
-      timerId = null;
-      setControlsDisabled(false); // Aktifkan kembali tombol saat dipause
+    async function pauseTimer() {
+      if (timerId !== null) {
+        clearInterval(timerId);
+        timerId = null;
+      }
+      setControlsDisabled(false);
+
+      await fetch('/api/control', { 
+        method: 'POST', 
+        headers: {'Content-Type': 'application/json'}, 
+        body: JSON.stringify({ action: 'pause' }) 
+      });
     }
 
-    function stopTimer() {
-      clearInterval(timerId);
-      timerId = null;
+    async function stopTimer() {
+      await pauseTimer();
       timeLeft = 120;
       updateTimerDisplay();
-      setControlsDisabled(false); // Aktifkan kembali tombol saat distop
+
+      await fetch('/api/control', { 
+        method: 'POST', 
+        headers: {'Content-Type': 'application/json'}, 
+        body: JSON.stringify({ action: 'stop' }) 
+      });
     }
 
     function aturWaktuCustom() {
@@ -334,14 +272,13 @@
       updateTimerDisplay();
     }
 
-    function nextRonde() {
-      pauseTimer();
+    async function nextRonde() {
+      await pauseTimer();
       currentRound++;
       scores.red = 0;
       scores.blue = 0;
       roundScores[currentRound] = { red: 0, blue: 0 };
 
-      // Tambahkan baris baru ke tabel riwayat ronde
       let tbody = document.getElementById('history-body');
       let tr = document.createElement('tr');
       tr.innerHTML = `<td>${currentRound}</td><td id="h-red-${currentRound}">0</td><td id="h-blue-${currentRound}">0</td>`;
@@ -352,9 +289,9 @@
       updateTimerDisplay();
     }
 
-    function resetPertandingan() {
+    async function resetPertandingan() {
       if (confirm('Yakin ingin mereset seluruh pertandingan?')) {
-        pauseTimer();
+        await pauseTimer();
         scores = { red: 0, blue: 0 };
         currentRound = 1;
         roundScores = { 1: { red: 0, blue: 0 } };
@@ -363,17 +300,23 @@
         document.getElementById('history-body').innerHTML = `<tr><td>1</td><td id="h-red-1">0</td><td id="h-blue-1">0</td></tr>`;
         updateTampilan();
         updateTimerDisplay();
+
+        await fetch('/api/control', { 
+          method: 'POST', 
+          headers: {'Content-Type': 'application/json'}, 
+          body: JSON.stringify({ action: 'reset' }) 
+        });
       }
     }
 
     function downloadPDF() {
       const element = document.getElementById('pdf-area');
       const opt = {
-        margin:       10,
-        filename:     'Laporan_Skor_Taekwondo.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+        margin: 10,
+        filename: 'Laporan_Skor_Taekwondo.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
       };
       html2pdf().from(element).set(opt).save();
     }
