@@ -18,60 +18,65 @@
       min-height: 100vh;
       padding: 20px;
     }
-    .top-header { text-align: center; margin-bottom: 15px; }
-    .round-title { font-size: 28px; font-weight: bold; color: #ffc107; letter-spacing: 2px; }
-    .timer { font-size: 80px; font-weight: bold; letter-spacing: 3px; color: #ffffff; margin-top: 5px; }
+    .top-header { text-align: center; margin-bottom: 10px; }
+    .round-title { font-size: 26px; font-weight: bold; color: #ffc107; letter-spacing: 2px; }
+    .timer { font-size: 75px; font-weight: bold; letter-spacing: 3px; color: #ffffff; margin-top: 2px; }
+    
     .main-container {
       display: flex;
-      gap: 20px;
+      gap: 25px;
       width: 100%;
-      max-width: 1200px;
+      max-width: 1250px;
       justify-content: center;
       align-items: stretch;
     }
     .corner {
-      flex: 1;
+      flex: 1.2;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       align-items: center;
-      border-radius: 16px;
-      padding: 30px 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border-radius: 20px;
+      padding: 35px 20px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.6);
     }
-    .red-corner { background: linear-gradient(135deg, #a71d2a 0%, #dc3545 100%); border: 2px solid #ff4d4d; }
-    .blue-corner { background: linear-gradient(135deg, #0d47a1 0%, #1976d2 100%); border: 2px solid #4da6ff; }
-    .corner-name { font-size: 36px; font-weight: 900; letter-spacing: 2px; }
-    .score-display { font-size: 150px; font-weight: bold; line-height: 1; margin: 20px 0; }
+    .red-corner { background: linear-gradient(135deg, #a71d2a 0%, #dc3545 100%); border: 3px solid #ff4d4d; }
+    .blue-corner { background: linear-gradient(135deg, #0d47a1 0%, #1976d2 100%); border: 3px solid #4da6ff; }
+    .corner-name { font-size: 40px; font-weight: 900; letter-spacing: 3px; }
+    .score-display { font-size: 170px; font-weight: bold; line-height: 1; margin: 15px 0; }
+    
     .btn-minus {
       background-color: rgba(0, 0, 0, 0.4);
       color: white;
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      padding: 10px 20px;
-      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      padding: 12px 24px;
+      border-radius: 8px;
       font-size: 18px;
       cursor: pointer;
       font-weight: bold;
     }
     .btn-minus:hover { background-color: rgba(0, 0, 0, 0.7); }
+
     .history-box {
-      width: 250px;
+      flex: 0.9;
       background: #161b22;
       border: 1px solid #30363d;
-      border-radius: 16px;
-      padding: 15px;
+      border-radius: 20px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
-    .history-title { font-size: 14px; font-weight: bold; color: #ffc107; margin-bottom: 10px; letter-spacing: 1px; }
-    .history-table { width: 100%; font-size: 14px; text-align: center; border-collapse: collapse; }
-    .history-table th, .history-table td { padding: 6px; border-bottom: 1px solid #30363d; }
-    .control-panel { margin-top: 20px; display: flex; flex-direction: column; gap: 12px; align-items: center; width: 100%; }
+    .history-title { font-size: 15px; font-weight: bold; color: #ffc107; margin-bottom: 12px; letter-spacing: 1px; }
+    .history-table { width: 100%; font-size: 15px; text-align: center; border-collapse: collapse; }
+    .history-table th, .history-table td { padding: 8px; border-bottom: 1px solid #30363d; }
+
+    .control-panel { margin-top: 15px; display: flex; flex-direction: column; gap: 10px; align-items: center; width: 100%; }
     .btn-group { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+    
     button.ctrl-btn {
       padding: 10px 20px;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: bold;
       border: none;
       border-radius: 6px;
@@ -79,19 +84,21 @@
       color: white;
       transition: opacity 0.2s;
     }
-    button.ctrl-btn:disabled { opacity: 0.4 !important; cursor: not-allowed !important; }
+    button.ctrl-btn:disabled { opacity: 0.35 !important; cursor: not-allowed !important; }
+    
     .btn-start { background-color: #28a745; }
     .btn-pause { background-color: #ffc107; color: black !important; }
     .btn-stop { background-color: #dc3545; }
     .btn-action { background-color: #17a2b8; }
     .btn-danger { background-color: #d9534f; }
     .btn-pdf { background-color: #6f42c1; }
+
     .time-setter {
       display: flex;
       gap: 8px;
       align-items: center;
       background: #161b22;
-      padding: 8px 15px;
+      padding: 6px 15px;
       border-radius: 8px;
       border: 1px solid #30363d;
     }
@@ -99,9 +106,12 @@
       width: 50px; text-align: center; background: #0b0e14; color: white; border: 1px solid #444; padding: 5px; border-radius: 4px;
     }
     .time-setter input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Styling khusus untuk cetak PDF agar rapi seperti laporan resmi */
+    #pdf-template { display: none; }
   </style>
 </head>
-<body id="pdf-area">
+<body>
 
   <div class="top-header">
     <div class="round-title" id="round-label">ROUND 1</div>
@@ -109,7 +119,7 @@
   </div>
 
   <div class="main-container">
-    <!-- Merah -->
+    <!-- Sudut Merah -->
     <div class="corner red-corner">
       <div class="corner-name">MERAH</div>
       <div class="score-display" id="score-red">0</div>
@@ -137,7 +147,7 @@
       </table>
     </div>
 
-    <!-- Biru -->
+    <!-- Sudut Biru -->
     <div class="corner blue-corner">
       <div class="corner-name">BIRU</div>
       <div class="score-display" id="score-blue">0</div>
@@ -161,10 +171,30 @@
     </div>
 
     <div class="btn-group">
-      <button class="ctrl-btn btn-action" onclick="nextRonde()">Manual Next Ronde</button>
-      <button class="ctrl-btn btn-danger" onclick="resetPertandingan()">Reset Pertandingan</button>
-      <button class="ctrl-btn btn-pdf" onclick="downloadPDF()">Download PDF</button>
+      <button id="btn-next" class="ctrl-btn btn-action" onclick="nextRonde()">Manual Next Ronde</button>
+      <button id="btn-reset" class="ctrl-btn btn-danger" onclick="resetPertandingan()">Reset Pertandingan</button>
+      <button id="btn-pdf" class="ctrl-btn btn-pdf" onclick="downloadPDF()">Download PDF</button>
     </div>
+  </div>
+
+  <!-- Template Tersembunyi khusus untuk Cetak PDF agar sesuai format contoh -->
+  <div id="pdf-template" style="background: white; color: black; padding: 30px; font-family: Arial, sans-serif; width: 800px; margin: 0 auto;">
+    <h2 style="text-align: center; margin-bottom: 5px; font-size: 20px;">HASIL PERTANDINGAN TAEKWONDO</h2>
+    <div id="pdf-timestamp" style="text-align: center; font-size: 12px; color: #555; margin-bottom: 20px;"></div>
+    
+    <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 14px;">
+      <thead>
+        <tr style="background-color: #2980b9; color: white;">
+          <th style="padding: 10px; border: 1px solid #ddd;">Ronde</th>
+          <th style="padding: 10px; border: 1px solid #ddd;">Skor Merah</th>
+          <th style="padding: 10px; border: 1px solid #ddd;">Skor Biru</th>
+          <th style="padding: 10px; border: 1px solid #ddd;">Pemenang Ronde</th>
+        </tr>
+      </thead>
+      <tbody id="pdf-table-body">
+        <!-- Diisi otomatis oleh JavaScript -->
+      </tbody>
+    </table>
   </div>
 
   <script>
@@ -177,7 +207,6 @@
     let timeLeft = 120;
     let timerId = null;
 
-    // Terima update skor sah (dari konsensus 2/3 juri)
     channel.bind('score-updated', function(data) {
       if (data.team === 'red') scores.red += Number(data.points);
       if (data.team === 'blue') scores.blue += Number(data.points);
@@ -210,11 +239,15 @@
         `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     }
 
+    // Mengatur status tombol aktif/redup saat pertandingan berjalan
     function setControlsDisabled(disabled) {
       document.getElementById('btn-start').disabled = disabled;
       document.getElementById('btn-set').disabled = disabled;
       document.getElementById('input-m').disabled = disabled;
       document.getElementById('input-s').disabled = disabled;
+      document.getElementById('btn-next').disabled = disabled;
+      document.getElementById('btn-reset').disabled = disabled;
+      document.getElementById('btn-pdf').disabled = disabled;
     }
 
     async function mulaiTimer() {
@@ -310,15 +343,67 @@
     }
 
     function downloadPDF() {
-      const element = document.getElementById('pdf-area');
+      // Buat isi tabel template PDF secara dinamis
+      let pdfBody = '';
+      let totalRed = 0;
+      let totalBlue = 0;
+
+      for (let r = 1; r <= currentRound; r++) {
+        let rRed = roundScores[r] ? roundScores[r].red : 0;
+        let rBlue = roundScores[r] ? roundScores[r].blue : 0;
+        totalRed += rRed;
+        totalBlue += rBlue;
+
+        let winner = "SERI";
+        if (rRed > rBlue) winner = "MERAH";
+        else if (rBlue > rRed) winner = "BIRU";
+
+        pdfBody += `
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;">Ronde ${r}</td>
+            <td style="padding: 8px; border: 1px solid #ddd; color: #d9534f; font-weight: bold;">${rRed}</td>
+            <td style="padding: 8px; border: 1px solid #ddd; color: #0275d8; font-weight: bold;">${rBlue}</td>
+            <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">${winner}</td>
+          </tr>
+        `;
+      }
+
+      // Baris Total Skor
+      let overallWinner = "SERI (IMBANG)";
+      if (totalRed > totalBlue) overallWinner = "MERAH (PEMENANG)";
+      else if (totalBlue > totalRed) overallWinner = "BIRU (PEMENANG)";
+
+      pdfBody += `
+        <tr style="background-color: #f2f2f2; font-weight: bold;">
+          <td style="padding: 10px; border: 1px solid #ddd;">TOTAL SKOR</td>
+          <td style="padding: 10px; border: 1px solid #ddd; color: #d9534f; font-size: 16px;">${totalRed}</td>
+          <td style="padding: 10px; border: 1px solid #ddd; color: #0275d8; font-size: 16px;">${totalBlue}</td>
+          <td style="padding: 10px; border: 1px solid #ddd;">${overallWinner}</td>
+        </tr>
+      `;
+
+      document.getElementById('pdf-table-body').innerHTML = pdfBody;
+
+      // Format Waktu Cetak
+      let now = new Date();
+      let timeString = `${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()}, ${now.getHours().toString().padStart(2,'0')}.${now.getMinutes().toString().padStart(2,'0')}`;
+      document.getElementById('pdf-timestamp').innerText = `Waktu Cetak: ${timeString}`;
+
+      // Cetak PDF menggunakan elemen template
+      const element = document.getElementById('pdf-template');
+      element.style.display = 'block';
+
       const opt = {
-        margin: 10,
-        filename: 'Laporan_Skor_Taekwondo.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+        margin:       10,
+        filename:     'Hasil_Pertandingan_Taekwondo.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
-      html2pdf().from(element).set(opt).save();
+
+      html2pdf().from(element).set(opt).save().then(() => {
+        element.style.display = 'none'; // Sembunyikan kembali setelah selesai
+      });
     }
   </script>
 
