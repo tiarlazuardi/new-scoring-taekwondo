@@ -12,59 +12,45 @@ const pusher = new Pusher({
   useTLS: true
 });
 
-let matchState = {
-  timerRunning: false,
-  votes: { red: {}, blue: {} }
-};
+let activeVotes = { red: {}, blue: {} };
 
 app.post('/api/vote', async (req, res) => {
   const { judgeId, team } = req.body;
   const now = Date.now();
 
-  if (!matchState.timerRunning) {
-    return res.json({ success: false, message: "Pertandingan belum dimulai!" });
-  }
+  activeVotes[team][judgeId] = now;
 
-  matchState.votes[team][judgeId] = now;
-
-  // Bersihkan vote yang lebih dari 1 detik
-  for (let t in matchState.votes) {
-    for (let j in matchState.votes[t]) {
-      if (now - matchState.votes[t][j] > 1000) {
-        delete matchState.votes[t][j];
+  // Bersihkan vote yang lewat dari 1 detik
+  for (let t in activeVotes) {
+    for (let j in activeVotes[t]) {
+      if (now - activeVotes[t][j] > 1000) {
+        delete activeVotes[t][j];
       }
     }
   }
 
-  let redJudges = Object.keys(matchState.votes.red);
-  let blueJudges = Object.keys(matchState.votes.blue);
+  let redJudges = Object.keys(activeVotes.red);
+  let blueJudges = Object.keys(activeVotes.blue);
 
   if (redJudges.length >= 2) {
-    let triggeredJudges = [...redJudges];
-    matchState.votes.red = {};
-    await pusher.trigger('taekwondo-channel', 'score-updated', { team: 'red', points: 1, judges: triggeredJudges });
+    let judgesList = [...redJudges];
+    activeVotes.red = {};
+    await pusher.trigger('taekwondo-channel', 'score-updated', { team: 'red', points: 1, judges: judgesList });
     return res.json({ success: true, triggered: 'red' });
   }
 
   if (blueJudges.length >= 2) {
-    let triggeredJudges = [...blueJudges];
-    matchState.votes.blue = {};
-    await pusher.trigger('taekwondo-channel', 'score-updated', { team: 'blue', points: 1, judges: triggeredJudges });
+    let judgesList = [...blueJudges];
+    activeVotes.blue = {};
+    await pusher.trigger('taekwondo-channel', 'score-updated', { team: 'blue', points: 1, judges: judgesList });
     return res.json({ success: true, triggered: 'blue' });
   }
 
-  res.json({ success: true, message: "Vote tercatat..." });
+  res.json({ success: true });
 });
 
 app.post('/api/control', async (req, res) => {
   const { action } = req.body;
-  if (action === 'start') {
-    matchState.timerRunning = true;
-  } else if (action === 'pause' || action === 'stop' || action === 'reset') {
-    matchState.timerRunning = false;
-    matchState.votes = { red: {}, blue: {} };
-  }
-
   await pusher.trigger('taekwondo-channel', 'control-action', { action });
   res.json({ success: true, action });
 });
