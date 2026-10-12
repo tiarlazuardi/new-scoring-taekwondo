@@ -61,7 +61,7 @@
       justify-content: center;
       align-items: center;
       cursor: not-allowed;
-      transition: all 0.15s;
+      transition: transform 0.08s ease;
       opacity: 0.2;
       user-select: none;
       -webkit-touch-callout: none;
@@ -73,7 +73,6 @@
     .btn-red { background-color: #3d1418; color: #777; }
     .btn-blue { background-color: #122847; color: #777; }
 
-    /* Saat Timer Berjalan (Aktif & Menyala) */
     .active-vote {
       opacity: 1 !important;
       cursor: pointer !important;
@@ -92,7 +91,7 @@
       border-color: #4da6ff;
       box-shadow: 0 0 15px rgba(13, 110, 253, 0.5);
     }
-    .btn-vote:active { transform: scale(0.94); }
+    .btn-vote:active { transform: scale(0.92); }
     .countdown-text {
       font-size: 13px;
       font-weight: normal;
@@ -116,11 +115,12 @@
   </div>
 
   <div class="button-container">
-    <div id="btn-red" class="btn-vote btn-red" onclick="kirimVote('red')">
+    <!-- Menggunakan 'pointerdown' agar merespons instan di iPhone & Android tanpa menunggu jeda klik -->
+    <div id="btn-red" class="btn-vote btn-red" onpointerdown="kirimVote('red')">
       <span>+1 MERAH</span>
       <div class="countdown-text" id="cd-red"></div>
     </div>
-    <div id="btn-blue" class="btn-vote btn-blue" onclick="kirimVote('blue')">
+    <div id="btn-blue" class="btn-vote btn-blue" onpointerdown="kirimVote('blue')">
       <span>+1 BIRU</span>
       <div class="countdown-text" id="cd-blue"></div>
     </div>
@@ -131,6 +131,7 @@
     const channel = pusher.subscribe('taekwondo-channel');
 
     let timerIsRunning = false;
+    let lastClickTime = 0;
 
     function getJudgeId() {
       return document.getElementById('judge-id').value;
@@ -165,7 +166,7 @@
       if (aktif) {
         redBtn.classList.add('active-vote');
         blueBtn.classList.add('active-vote');
-        statusBar.innerText = "PERTANDINGAN BERJALAN (SILAHKAN MENILAI)";
+        statusBar.innerText = "PERTANDINGAN BERJALAN";
         statusBar.style.color = "#4dff4d";
       } else {
         redBtn.classList.remove('active-vote');
@@ -178,31 +179,32 @@
     async function kirimVote(team) {
       if (!timerIsRunning) return;
 
+      // Mencegah spam klik ganda dalam waktu < 300ms
+      let now = Date.now();
+      if (now - lastClickTime < 300) return;
+      lastClickTime = now;
+
+      // Umpan balik instan (Countdown 1 detik di HP juri)
       let cdElement = document.getElementById(`cd-${team}`);
       let timeLeft = 1.0;
-      cdElement.innerText = "Menunggu (1.0s)...";
+      cdElement.innerText = "Menunggu...";
 
       let interval = setInterval(() => {
         timeLeft -= 0.2;
         if (timeLeft > 0) {
-          cdElement.innerText = `Menunggu (${timeLeft.toFixed(1)}s)...`;
+          cdElement.innerText = `Menunggu (${timeLeft.toFixed(1)}s)`;
         } else {
           clearInterval(interval);
           cdElement.innerText = "";
         }
       }, 200);
 
-      try {
-        await fetch('/api/vote', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ judgeId: getJudgeId(), team })
-        });
-      } catch (error) {
-        console.error('Gagal mengirim vote:', error);
-        clearInterval(interval);
-        cdElement.innerText = "";
-      }
+      // Kirim request ke backend secara asinkron di background tanpa blocking
+      fetch('/api/vote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ judgeId: getJudgeId(), team })
+      }).catch(err => console.error('Gagal kirim:', err));
     }
   </script>
 
