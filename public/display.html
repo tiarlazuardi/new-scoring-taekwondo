@@ -234,8 +234,10 @@
     function updateTampilan() {
       document.getElementById('score-red').innerText = scores.red;
       document.getElementById('score-blue').innerText = scores.blue;
-      document.getElementById(`h-red-${currentRound}`).innerText = scores.red;
-      document.getElementById(`h-blue-${currentRound}`).innerText = scores.blue;
+      if (document.getElementById(`h-red-${currentRound}`)) {
+        document.getElementById(`h-red-${currentRound}`).innerText = scores.red;
+        document.getElementById(`h-blue-${currentRound}`).innerText = scores.blue;
+      }
     }
 
     function updateTimerDisplay() {
@@ -258,11 +260,13 @@
     async function mulaiTimer() {
       if (timerId !== null) return;
       
-      await fetch('/api/control', { 
-        method: 'POST', 
-        headers: {'Content-Type': 'application/json'}, 
-        body: JSON.stringify({ action: 'start' }) 
-      });
+      try {
+        await fetch('/api/control', { 
+          method: 'POST', 
+          headers: {'Content-Type': 'application/json'}, 
+          body: JSON.stringify({ action: 'start' }) 
+        });
+      } catch (e) { console.error(e); }
 
       setControlsDisabled(true);
 
@@ -271,8 +275,10 @@
           timeLeft--;
           updateTimerDisplay();
         } else {
-          pauseTimer();
-          alert('Waktu ronde habis! Otomatis pindah ke ronde berikutnya.');
+          // Ketika waktu habis
+          clearInterval(timerId);
+          timerId = null;
+          alert(`Waktu Ronde ${currentRound} Habis! Otomatis berpindah ke Ronde ${currentRound + 1}.`);
           nextRonde();
         }
       }, 1000);
@@ -285,23 +291,19 @@
       }
       setControlsDisabled(false);
 
-      await fetch('/api/control', { 
-        method: 'POST', 
-        headers: {'Content-Type': 'application/json'}, 
-        body: JSON.stringify({ action: 'pause' }) 
-      });
+      try {
+        await fetch('/api/control', { 
+          method: 'POST', 
+          headers: {'Content-Type': 'application/json'}, 
+          body: JSON.stringify({ action: 'pause' }) 
+        });
+      } catch (e) { console.error(e); }
     }
 
     async function stopTimer() {
       await pauseTimer();
       timeLeft = 120;
       updateTimerDisplay();
-
-      await fetch('/api/control', { 
-        method: 'POST', 
-        headers: {'Content-Type': 'application/json'}, 
-        body: JSON.stringify({ action: 'stop' }) 
-      });
     }
 
     function aturWaktuCustom() {
@@ -312,40 +314,70 @@
     }
 
     async function nextRonde() {
-      await pauseTimer();
+      // Hentikan timer jika sedang berjalan
+      if (timerId !== null) {
+        clearInterval(timerId);
+        timerId = null;
+      }
+      setControlsDisabled(false);
+
+      // Kirim sinyal pause ke serverless agar HP juri terkunci sementara sampai Start lagi
+      try {
+        fetch('/api/control', { 
+          method: 'POST', 
+          headers: {'Content-Type': 'application/json'}, 
+          body: JSON.stringify({ action: 'pause' }) 
+        });
+      } catch (e) { console.error(e); }
+
+      // Tambah Ronde & Reset Skor
       currentRound++;
       scores.red = 0;
       scores.blue = 0;
       roundScores[currentRound] = { red: 0, blue: 0, logs: [] };
+
+      // Update Tampilan Layar Utama
+      document.getElementById('round-label').innerText = `ROUND ${currentRound}`;
       updateTampilan();
 
+      // Tambahkan baris baru ke tabel riwayat ronde
       let tbody = document.getElementById('history-body');
       let tr = document.createElement('tr');
       tr.innerHTML = `<td>${currentRound}</td><td id="h-red-${currentRound}">0</td><td id="h-blue-${currentRound}">0</td>`;
       tbody.appendChild(tr);
 
-      document.getElementById('round-label').innerText = `ROUND ${currentRound}`;
-      timeLeft = 120;
+      // Reset waktu timer sesuai input custom m & s (atau default 2 menit)
+      let m = parseInt(document.getElementById('input-m').value) || 2;
+      let s = parseInt(document.getElementById('input-s').value) || 0;
+      timeLeft = (m * 60) + s;
       updateTimerDisplay();
     }
 
     async function resetPertandingan() {
       if (confirm('Yakin ingin mereset seluruh pertandingan?')) {
-        await pauseTimer();
+        if (timerId !== null) {
+          clearInterval(timerId);
+          timerId = null;
+        }
+        setControlsDisabled(false);
+
         scores = { red: 0, blue: 0 };
         currentRound = 1;
         roundScores = { 1: { red: 0, blue: 0, logs: [] } };
         timeLeft = 120;
+        
         document.getElementById('round-label').innerText = 'ROUND 1';
         document.getElementById('history-body').innerHTML = `<tr><td>1</td><td id="h-red-1">0</td><td id="h-blue-1">0</td></tr>`;
         updateTampilan();
         updateTimerDisplay();
 
-        await fetch('/api/control', { 
-          method: 'POST', 
-          headers: {'Content-Type': 'application/json'}, 
-          body: JSON.stringify({ action: 'reset' }) 
-        });
+        try {
+          await fetch('/api/control', { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify({ action: 'reset' }) 
+          });
+        } catch (e) { console.error(e); }
       }
     }
 
