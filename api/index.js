@@ -25,9 +25,10 @@ app.post('/api/vote', async (req, res) => {
     return res.json({ success: false, message: "Pertandingan belum dimulai!" });
   }
 
+  // Catat atau perbarui waktu vote dari judgeId ini
   matchState.votes[team][judgeId] = now;
 
-  // Bersihkan vote lebih dari 1 detik
+  // Bersihkan vote yang usianya sudah lebih dari 1 detik (1000 ms)
   for (let t in matchState.votes) {
     for (let j in matchState.votes[t]) {
       if (now - matchState.votes[t][j] > 1000) {
@@ -39,13 +40,17 @@ app.post('/api/vote', async (req, res) => {
   let redCount = Object.keys(matchState.votes.red).length;
   let blueCount = Object.keys(matchState.votes.blue).length;
 
+  // Jika minimal 2 juri menekan merah dalam 1 detik
   if (redCount >= 2) {
+    // Kosongkan agar juri bisa menekan lagi untuk poin berikutnya
     matchState.votes.red = {};
     await pusher.trigger('taekwondo-channel', 'score-updated', { team: 'red', points: 1 });
     return res.json({ success: true, triggered: 'red' });
   }
 
+  // Jika minimal 2 juri menekan biru dalam 1 detik
   if (blueCount >= 2) {
+    // Kosongkan agar juri bisa menekan lagi untuk poin berikutnya
     matchState.votes.blue = {};
     await pusher.trigger('taekwondo-channel', 'score-updated', { team: 'blue', points: 1 });
     return res.json({ success: true, triggered: 'blue' });
