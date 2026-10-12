@@ -20,7 +20,7 @@
     }
     .status-bar {
       background: #1a1a1a;
-      color: #4dff4d;
+      color: #ffc107;
       padding: 12px;
       border-radius: 8px;
       font-weight: bold;
@@ -60,42 +60,51 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      cursor: pointer;
-      transition: transform 0.1s;
+      cursor: not-allowed;
+      transition: all 0.15s;
+      opacity: 0.2;
       user-select: none;
       -webkit-touch-callout: none;
       -webkit-user-select: none;
       -webkit-tap-highlight-color: transparent;
-      border: 2px solid;
+      border: 2px dashed #444;
+      pointer-events: none;
     }
-    .btn-red {
+    .btn-red { background-color: #3d1418; color: #777; }
+    .btn-blue { background-color: #122847; color: #777; }
+
+    /* Saat Timer Berjalan (Aktif & Menyala) */
+    .active-vote {
+      opacity: 1 !important;
+      cursor: pointer !important;
+      pointer-events: auto !important;
+      border-style: solid !important;
+    }
+    .active-vote.btn-red {
       background-color: #dc3545;
       color: #ffffff;
       border-color: #ff4d4d;
-      box-shadow: 0 0 20px rgba(220, 53, 69, 0.6);
+      box-shadow: 0 0 15px rgba(220, 53, 69, 0.5);
     }
-    .btn-blue {
+    .active-vote.btn-blue {
       background-color: #0d6efd;
       color: #ffffff;
       border-color: #4da6ff;
-      box-shadow: 0 0 20px rgba(13, 110, 253, 0.6);
+      box-shadow: 0 0 15px rgba(13, 110, 253, 0.5);
     }
-    .btn-vote:active {
-      transform: scale(0.92);
-      opacity: 0.8;
-    }
+    .btn-vote:active { transform: scale(0.94); }
     .countdown-text {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: normal;
-      margin-top: 8px;
+      margin-top: 5px;
       color: #ffeb3b;
-      min-height: 20px;
+      min-height: 18px;
     }
   </style>
 </head>
 <body>
 
-  <div class="status-bar" id="status-text">PANEL JURI SIAP DIGUNAKAN</div>
+  <div class="status-bar" id="status-text">MENUNGGU START DARI OPERATOR...</div>
 
   <div class="judge-selector">
     Perangkat Ini: 
@@ -107,12 +116,11 @@
   </div>
 
   <div class="button-container">
-    <!-- Menggunakan event ontouchend dan onclick agar responsif di iPhone & Android -->
-    <div class="btn-vote btn-red" onclick="kirimVote('red')">
+    <div id="btn-red" class="btn-vote btn-red" onclick="kirimVote('red')">
       <span>+1 MERAH</span>
       <div class="countdown-text" id="cd-red"></div>
     </div>
-    <div class="btn-vote btn-blue" onclick="kirimVote('blue')">
+    <div id="btn-blue" class="btn-vote btn-blue" onclick="kirimVote('blue')">
       <span>+1 BIRU</span>
       <div class="countdown-text" id="cd-blue"></div>
     </div>
@@ -121,6 +129,8 @@
   <script>
     const pusher = new Pusher('1c192663177ea6b128ac', { cluster: 'ap1' });
     const channel = pusher.subscribe('taekwondo-channel');
+
+    let timerIsRunning = false;
 
     function getJudgeId() {
       return document.getElementById('judge-id').value;
@@ -137,7 +147,37 @@
       }
     }
 
+    channel.bind('control-action', function(data) {
+      if (data.action === 'start') {
+        timerIsRunning = true;
+        ubahStatusAktif(true);
+      } else if (data.action === 'pause' || data.action === 'stop' || data.action === 'reset') {
+        timerIsRunning = false;
+        ubahStatusAktif(false);
+      }
+    });
+
+    function ubahStatusAktif(aktif) {
+      const redBtn = document.getElementById('btn-red');
+      const blueBtn = document.getElementById('btn-blue');
+      const statusBar = document.getElementById('status-text');
+
+      if (aktif) {
+        redBtn.classList.add('active-vote');
+        blueBtn.classList.add('active-vote');
+        statusBar.innerText = "PERTANDINGAN BERJALAN (SILAHKAN MENILAI)";
+        statusBar.style.color = "#4dff4d";
+      } else {
+        redBtn.classList.remove('active-vote');
+        blueBtn.classList.remove('active-vote');
+        statusBar.innerText = "MENUNGGU START DARI OPERATOR...";
+        statusBar.style.color = "#ffc107";
+      }
+    }
+
     async function kirimVote(team) {
+      if (!timerIsRunning) return;
+
       let cdElement = document.getElementById(`cd-${team}`);
       let timeLeft = 1.0;
       cdElement.innerText = "Menunggu (1.0s)...";
@@ -153,17 +193,15 @@
       }, 200);
 
       try {
-        let response = await fetch('/api/vote', {
+        await fetch('/api/vote', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ judgeId: getJudgeId(), team })
         });
-        let result = await response.json();
-        console.log('Respon server:', result);
       } catch (error) {
         console.error('Gagal mengirim vote:', error);
         clearInterval(interval);
-        cdElement.innerText = "Gagal Kirim!";
+        cdElement.innerText = "";
       }
     }
   </script>
