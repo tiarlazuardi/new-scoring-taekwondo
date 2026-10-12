@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel Juri Taekwondo - Vercel</title>
+  <style>
+    body {
+      background-color: #1a1a1a;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding-top: 30px;
+    }
+    .btn-group {
+      margin: 20px 0;
+    }
+    button {
+      padding: 15px 30px;
+      font-size: 20px;
+      margin: 10px;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+    }
+    .btn-red { background-color: #ff4d4d; color: white; }
+    .btn-blue { background-color: #4da6ff; color: white; }
+    .btn-reset { background-color: #ffa500; color: white; }
+  </style>
+</head>
+<body>
+
+  <h1>PANEL JURI</h1>
+  <p>Tekan tombol di bawah untuk memberikan poin:</p>
+
+  <div class="btn-group">
+    <h3>Corner RED</h3>
+    <button class="btn-red" onclick="kirimSkor('red', 1)">Red +1</button>
+    <button class="btn-red" onclick="kirimSkor('red', 2)">Red +2</button>
+    <button class="btn-red" onclick="kirimSkor('red', 3)">Red +3</button>
+  </div>
+
+  <hr style="width: 50%; border-color: #444;">
+
+  <div class="btn-group">
+    <h3>Corner BLUE</h3>
+    <button class="btn-blue" onclick="kirimSkor('blue', 1)">Blue +1</button>
+    <button class="btn-blue" onclick="kirimSkor('blue', 2)">Blue +2</button>
+    <button class="btn-blue" onclick="kirimSkor('blue', 3)">Blue +3</button>
+  </div>
+
+  <hr style="width: 50%; border-color: #444;">
+
+  <div class="btn-group">
+    <button class="btn-reset" onclick="resetPertandingan()">Reset Skor</button>
+  </div>
+
+  <script>
+    // Fungsi mengirim skor ke backend serverless (/api/vote)
+    async function kirimSkor(team, points) {
+      try {
+        const response = await fetch('/api/vote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ team, points })
+        });
+        const result = await response.json();
+        console.log('Skor terkirim:', result);
+      } catch (error) {
+        console.error('Gagal mengirim skor:', error);
+        alert('Gagal terhubung ke server!');
+      }
+    }
+
+    // Fungsi mereset pertandingan
+    async function resetPertandingan() {
+      if (confirm('Yakin ingin mereset skor pertandingan?')) {
+        try {
+          await fetch('/api/control', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'reset' })
+          });
+        } catch (error) {
+          console.error('Gagal mereset:', error);
+        }
+      }
+    }
+  </script>
+
+</body>
+</html>

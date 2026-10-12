@@ -1,0 +1,13 @@
+{
+  "name": "new-scoring-taekwondo",
+  "version": "1.0.0",
+  "description": "Taekwondo Scoring System Vercel",
+  "main": "api/index.js",
+  "scripts": {
+    "start": "node api/index.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "pusher": "^5.2.0"
+  }
+}

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Display Skor Taekwondo - Vercel</title>
+  <!-- Load Pusher Client SDK -->
+  <script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
+  <style>
+    body {
+      background-color: #121212;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding-top: 50px;
+    }
+    .score-container {
+      display: flex;
+      justify-content: center;
+      gap: 50px;
+      font-size: 80px;
+      margin-top: 30px;
+    }
+    .red { color: #ff4d4d; }
+    .blue { color: #4da6ff; }
+  </style>
+</head>
+<body>
+
+  <h1>TAEKWONDO TOURNAMENT DISPLAY</h1>
+  <h2>Status: <span id="status-koneksi" style="color: yellow;">Menghubungkan...</span></h2>
+
+  <div class="score-container">
+    <div>
+      <p>RED</p>
+      <div id="score-red">0</div>
+    </div>
+    <div>
+      <div>-</div>
+    </div>
+    <div>
+      <p>BLUE</p>
+      <div id="score-blue">0</div>
+    </div>
+  </div>
+
+  <script>
+    // Inisialisasi Pusher di sisi Frontend
+    const pusher = new Pusher('1c192663177ea6b128ac', {
+      cluster: 'ap1'
+    });
+
+    const channel = pusher.subscribe('taekwondo-channel');
+
+    // Indikator Berhasil Terhubung
+    pusher.connection.bind('connected', function() {
+      document.getElementById('status-koneksi').innerText = 'Terhubung Real-Time!';
+      document.getElementById('status-koneksi').style.color = '#4dff4d';
+    });
+
+    // Variabel Skor Lokal
+    let scores = { red: 0, blue: 0 };
+
+    // Mendengarkan update skor dari server/juri
+    channel.bind('score-updated', function(data) {
+      if (data.team === 'red') {
+        scores.red += Number(data.points);
+      } else if (data.team === 'blue') {
+        scores.blue += Number(data.points);
+      }
+
+      // Tampilkan di layar
+      document.getElementById('score-red').innerText = scores.red;
+      document.getElementById('score-blue').innerText = scores.blue;
+    });
+
+    // Mendengarkan aksi kontrol (misal reset/timer)
+    channel.bind('control-action', function(data) {
+      console.log('Aksi kontrol diterima:', data);
+      if (data.action === 'reset') {
+        scores.red = 0;
+        scores.blue = 0;
+        document.getElementById('score-red').innerText = 0;
+        document.getElementById('score-blue').innerText = 0;
+        alert('Pertandingan di-reset oleh operator!');
+      }
+    });
+  </script>
+
+</body>
+</html>
